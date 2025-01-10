@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->double('price');
             $table->integer('bedrooms');
-            $table->string('bathrooms');
-            $table->string('storeys');
-            $table->string('garages');
+            $table->integer('bathrooms');
+            $table->integer('storeys');
+            $table->integer('garages');
 
 
             $table->timestamps();
