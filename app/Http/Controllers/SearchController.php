@@ -10,27 +10,24 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class SearchController extends Controller
 {
+
+    public function index(): JsonResponse
+    {
+        return response()->json([
+            "properties" => Property::all()
+        ]);
+    }
+
+
     public function searchProperties(Request $request): JsonResponse
     {
 
         $name = $request->query('name');
-        $bedrooms = $request->query('bedrooms');
-        $bathrooms = $request->query('bathrooms');
-        $garages = $request->query('garages');
-        $storeys = $request->query('storeys');
+        $bedrooms = (int) ($request->query('bedrooms'));
+        $bathrooms = (int) ($request->query('bathrooms'));
+        $garages = (int) ($request->query('garages'));
+        $storeys = (int) ($request->query('storeys'));
         $price = $request->query('price');
-
-        // explode this search and get the max and the min from this string, convert to a integer and store it in another variable
-        $priceRange = explode('-', $price);
-        $minPrice = (int) $priceRange[0];
-        $maxPrice = (int) $priceRange[1];
-
-        if ($minPrice > $maxPrice) {
-            return response()->json([
-                'error' => 'Invalid price range',
-            ], 400);
-        }
-
 
         $searchResults = Property::when($name, function ($query) use ($name) {
             $query->where('name', 'ILIKE', '%' . $name . '%');
@@ -47,7 +44,19 @@ class SearchController extends Controller
             ->when($garages, function ($query) use ($garages) {
                 $query->where('garages', '=', $garages);
             })
-            ->when($price, function ($query) use ($minPrice, $maxPrice) {
+            ->when($price, function ($query) use ($price) {
+                if ($price) {
+                    $priceRange = explode('-', $price);
+                }
+                $minPrice = (int) $priceRange[0];
+                $maxPrice = (int) $priceRange[1];
+
+                if ($minPrice > $maxPrice) {
+                    return response()->json([
+                        'error' => 'Invalid price range',
+                    ], 400);
+                }
+
                 $query->where('price', '>=', $minPrice)
                     ->where('price', '<=', $maxPrice);
             })
